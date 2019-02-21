@@ -1,0 +1,33 @@
+resources:
+  - name: api-<studentID>
+    type: git
+    source:
+      uri: <GIT_URI>
+      branch: master
+    check_every: 10s
+jobs:
+- name: unit-test
+  plan:
+  - get: api-<studentID>
+    trigger: true
+  - task: mvn-test
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+      inputs:
+      - name: api-<studentID>
+      caches:
+      - path: api-<studentID>/m2   
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          cd api-<studentID>
+          rm -rf ~/.m2
+          ln -fs $(pwd)/m2 ~/.m2
+          mvn test
